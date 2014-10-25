@@ -4,10 +4,9 @@
 -include_lib("ssl/src/tls_handshake.hrl").
 -include_lib("ssl/src/tls_record.hrl").
 
--define(MARK_FILE, "hosts.txt").
--define(MARK_PORT, 4000).
+-define(MARK_DIR, "redir").
 -define(LISTEN_PORT, 5000).
--define(DEFAULT_PORT, 6000).
+-define(DEFAULT_PORT, 5001).
 
 start() ->
 	{ok, LSock} = gen_tcp:listen(?LISTEN_PORT, [binary, {active, true}, {packet, raw}]),
@@ -42,20 +41,15 @@ forwarder(Socket1, Socket2) ->
 get_target(Packet) ->
 	try get_server_name(Packet) of
 		Name ->
-			{ok, File} = file:open(?MARK_FILE, [read, raw, read_ahead]),
-			case match_lines(File, Name) of
-				true -> ?MARK_PORT;
-				false -> ?DEFAULT_PORT
+			case file:open(?MARK_DIR ++ "/" ++ Name, [read, raw, read_ahead]) of
+				{ok, File} ->
+					case file:read_line(File) of
+						{ok, Line} -> list_to_integer(string:strip(Line, right, $\n))
+					end;
+				{error,enoent} -> ?DEFAULT_PORT
 			end
 	catch
 		E -> io:format("Couldn't extract SNI: ~p~n", [E]), ?DEFAULT_PORT
-	end.
-
-match_lines(File, Name) ->
-	case file:read_line(File) of
-		{ok, Line} ->
-			Name == string:strip(Line, right, $\n) orelse match_lines(File, Name);
-		eof -> file:close(File), false
 	end.
 
 get_server_name(Packet) ->
