@@ -17,8 +17,8 @@ start() ->
 log(Name, Source, Target) ->
     gen_server:cast(logger, {log, Name, Source, Target}).
 
-init(_Args) ->
-   file:open(?LOG_FILE, [append, raw]).
+init([LogFile]) ->
+   file:open(LogFile, [append, raw]).
 
 handle_cast({log, Name, Source, Target}, Logfile) ->
    Msg = io_lib:format("~s ~s from ~s dispatched to ~p~n", [iso_8601_fmt(erlang:localtime()), Name, inet_parse:ntoa(Source), Target]),
