@@ -20,6 +20,3 @@ Running
 	$ erl -s snifer
 
  - to stop, enter `q().` and press `Enter`
- - until a [pull request regarding SNI parsing in OTP][pr389] is resolved, append `-pa patch`
-
-  [pr389]: https://github.com/erlang/otp/pull/389
