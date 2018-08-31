@@ -1,6 +1,8 @@
 -module(snifer).
 -export([start/0, acceptor/1]).
 
+-include_lib("ssl/src/ssl_cipher.hrl").
+-include_lib("ssl/src/ssl_internal.hrl").
 -include_lib("ssl/src/tls_handshake.hrl").
 -include_lib("ssl/src/tls_record.hrl").
 
@@ -59,5 +61,5 @@ get_target(Packet) ->
 get_server_name(Packet) ->
 	{[Record | _], _} = tls_record:get_tls_records(Packet, <<>>),
 	{[{ClientHello, _}], _} = tls_handshake:get_tls_handshake(
-		Record#ssl_tls.version, Record#ssl_tls.fragment, <<>>),
+		Record#ssl_tls.version, Record#ssl_tls.fragment, <<>>, #ssl_options{v2_hello_compatible=true} ),
 	ClientHello#client_hello.extensions#hello_extensions.sni#sni.hostname.
