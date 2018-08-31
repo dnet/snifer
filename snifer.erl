@@ -9,6 +9,7 @@
 -define(MARK_DIR, "redirs/").
 -define(LISTEN_PORT, 443).
 -define(DEFAULT_PORT, 5000).
+-define(SSL_TLS_VERSIONS, [{3, 1}, {3, 2}, {3, 3}]).
 
 start() ->
 	{ok, LSock} = gen_tcp:listen(?LISTEN_PORT, [binary,{reuseaddr, true}, {active, true}, {packet, raw}]),
@@ -59,7 +60,7 @@ get_target(Packet) ->
 	end.
 
 get_server_name(Packet) ->
-	{[Record | _], _} = tls_record:get_tls_records(Packet, <<>>),
+	{[Record | _], _} = tls_record:get_tls_records(Packet, ?SSL_TLS_VERSIONS, <<>>),
 	{[{ClientHello, _}], _} = tls_handshake:get_tls_handshake(
 		Record#ssl_tls.version, Record#ssl_tls.fragment, <<>>, #ssl_options{v2_hello_compatible=true} ),
 	ClientHello#client_hello.extensions#hello_extensions.sni#sni.hostname.
